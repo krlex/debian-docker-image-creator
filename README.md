@@ -67,7 +67,7 @@ Build you Debian image (eg. wheezy).
 $ ./build.sh -d wheezy -u rockyluke
 ```
 
-Build you Debian image (eg. jessie )and push it on the Docker Hub.
+Build you Debian image (eg. jessie) and push it on the Docker Hub.
 
 ```bash
 $ ./build.sh -d jessie -u rockyluke -p
