@@ -16,6 +16,8 @@ all of our images are accurates.
 
 ## Tags
 
+Supported tags.
+
 - 5, lenny
 - 6, squeeze
 - 7, wheezy, oldstable
