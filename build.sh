@@ -38,14 +38,14 @@ function usage()
     cat <<EOF
 
 NAME:
-   build.sh - Docker images and builders of Debian.
+   build.sh - Docker images' builder of Debian.
 
 USAGE:
    build.sh -d <dist>
 
 OPTIONS:
    -h, --help           Show help
-   -d, --dist		Choose debian distribution (lenny, squeeze, wheezy, jessie, stretch, sid)
+   -d, --dist		Choose Debian distribution (lenny, squeeze, wheezy, jessie, stretch, sid)
    -m, --mirror		Choose your preferred mirror (default: ftp.debian.org)
    -t, --timezone       Choose your preferred timezone (default: Europe/Amsterdam)
    -u, --user		Docker Hub username (or organisation)
@@ -306,7 +306,7 @@ function docker_import()
 	if [ "${distname}" = "${!import}" ]
 	then
 	    docker tag "${user}/debian:${distname}" "${user}/debian:${import}"
-	    docker run "${user}/debian:${distid}" echo "Successfully build ${user}/debian:${import}"
+	    docker run "${user}/debian:${import}" echo "Successfully build ${user}/debian:${import}"
 	fi
     done
 } # docker_import
@@ -316,7 +316,6 @@ function docker_push()
     # push image
     echo "-- docker push debian:${distname}"
     docker push "${user}/debian:${distname}"
-
     echo "-- docker push debian:${distid}"
     docker push "${user}/debian:${distid}"
 
