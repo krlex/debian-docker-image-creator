@@ -53,9 +53,9 @@ $ docker login
 
 ## Usage
 
-You first  need to choose which  dist between lenny, squeeze,  wheezy,jessie and
-stretch you want  (jessie will be the  'latest' tag) and you need  to choose you
-user (or organization) name on Docker Hub.
+You first need  to choose which dist between lenny  (5.0), squeeze (6.0), wheezy
+(7.0), jessie (8.0) and stretch (9.0) you want (jessie will be the 'latest' tag)
+and you need to choose you user (or organization) name on Docker Hub.
 
 Show help.
 
