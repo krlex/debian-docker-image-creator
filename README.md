@@ -53,9 +53,9 @@ $ docker login
 
 ## Usage
 
-You first need to choose which dist  between squeeze, wheezy and jessie you want
-(jessie  will  be  the  latest  tag)  and  you  need  to  choose  you  user  (or
-organization) name on Docker Hub.
+You first  need to choose which  dist between lenny, squeeze,  wheezy,jessie and
+stretch you want  (jessie will be the  'latest' tag) and you need  to choose you
+user (or organization) name on Docker Hub.
 
 Show help.
 
@@ -63,13 +63,13 @@ Show help.
 $ ./build.sh -h
 ```
 
-Build you Debian image (eg. wheezy).
+Build your own Debian image (eg. wheezy).
 
 ```bash
 $ ./build.sh -d wheezy -u rockyluke
 ```
 
-Build you Debian image (eg. jessie) and push it on the Docker Hub.
+Build your own Debian image (eg. jessie) and push it on the Docker Hub.
 
 ```bash
 $ ./build.sh -d jessie -u rockyluke -p

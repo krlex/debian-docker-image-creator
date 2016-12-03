@@ -9,4 +9,4 @@ addons:
       - shellcheck
 
 script:
-  - shellcheck -e 1039,2034,2154 build.sh functions.sh
+  - shellcheck -e 2034 docker-debian.sh
