@@ -57,7 +57,7 @@ VERSION:
    docker-debian version: ${version}
 
 EOF
-} # usage
+}
 
 function docker_debootstrap()
 {
@@ -221,20 +221,6 @@ EOF
     cat <<EOF | ${sudo} tee "${image}/usr/bin/apt-clean" > /dev/null
 #!/bin/bash
 
-# Copyright (c) 2016, rockyluke
-#
-# Permission  to use,  copy, modify,  and/or  distribute this  software for  any
-# purpose  with  or without  fee  is hereby  granted,  provided  that the  above
-# copyright notice and this permission notice appear in all copies.
-#
-# THE SOFTWARE IS PROVIDED "AS IS"  AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-# REGARD TO  THIS SOFTWARE INCLUDING  ALL IMPLIED WARRANTIES  OF MERCHANTABILITY
-# AND FITNESS.  IN NO EVENT SHALL  THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-# INDIRECT, OR  CONSEQUENTIAL DAMAGES OR  ANY DAMAGES WHATSOEVER  RESULTING FROM
-# LOSS OF USE, DATA OR PROFITS,  WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-# OTHER  TORTIOUS ACTION,  ARISING  OUT OF  OR  IN CONNECTION  WITH  THE USE  OR
-# PERFORMANCE OF THIS SOFTWARE.
-
 # Please read https://wiki.debian.org/ReduceDebian
 
 find /usr/share/doc     -type f ! -name copyright -delete
@@ -243,6 +229,7 @@ find /usr/share/locale  -type f -delete
 find /usr/share/man     -type f -delete
 find /var/cache/apt     -type f -delete
 find /var/lib/apt/lists -type f -delete
+# EOF
 EOF
     ${sudo} chmod 755 "${image}/usr/bin/apt-clean"
 
@@ -289,18 +276,17 @@ EOF
 	${sudo} rm "${image}.tar"
     fi
     ${sudo} tar --numeric-owner -cf "${image}.tar" -C "${image}" .
-} # docker_debootstrap
+}
 
+# create images from bootstrap archive
 function docker_import()
 {
-    # create image
     echo "-- docker import debian:${distname} (from ${image}.tgz)"
     docker import "${image}.tar" "${user}/debian:${distname}"
     docker run "${user}/debian:${distname}" echo "Successfully build ${user}/debian:${distname}"
     docker tag "${user}/debian:${distname}" "${user}/debian:${distid}"
     docker run "${user}/debian:${distid}" echo "Successfully build ${user}/debian:${distid}"
 
-    # tag {latest,stable,oldstable}
     for import in latest oldstable stable testing
     do
 	if [ "${distname}" = "${!import}" ]
@@ -309,17 +295,16 @@ function docker_import()
 	    docker run "${user}/debian:${import}" echo "Successfully build ${user}/debian:${import}"
 	fi
     done
-} # docker_import
+}
 
+# push image to docker hub
 function docker_push()
 {
-    # push image
     echo "-- docker push debian:${distname}"
     docker push "${user}/debian:${distname}"
     echo "-- docker push debian:${distid}"
     docker push "${user}/debian:${distid}"
 
-    # push {latest,stable,oldstable}
     for push in latest oldstable stable testing
     do
 	if [ "${distname}" = "${!push}"  ]
@@ -328,7 +313,7 @@ function docker_push()
 	    docker push "${user}/debian:${push}"
 	fi
     done
-} # docker_push
+}
 
 while getopts 'hd:m:t:u:plv' OPTIONS
 do
@@ -438,13 +423,9 @@ then
     latest='jessie'
 fi
 
-# create image
 docker_debootstrap
-
-# import image
 docker_import
 
-# push image
 if [ -n "${push}" ]
 then
     docker_push
