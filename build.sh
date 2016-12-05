@@ -14,24 +14,13 @@
 # OTHER  TORTIOUS ACTION,  ARISING  OUT OF  OR  IN CONNECTION  WITH  THE USE  OR
 # PERFORMANCE OF THIS SOFTWARE.
 
+PATH='/usr/sbin:/usr/bin:/sbin:/bin'
+
 arch='amd64'
 oldstable='wheezy'
 stable='jessie'
 testing='stretch'
 version='3.0'
-
-
-if [ ! -x "$(command -v sudo)" ]
-then
-    echo "Please install sudo (see README.md)"
-    exit 1
-fi
-
-if [ ! -x "$(command -v debootstrap)" ]
-then
-    echo "Please install debootstrap (see README.md)"
-    exit 1
-fi
 
 function usage()
 {
@@ -358,6 +347,18 @@ do
 	    ;;
     esac
 done
+
+if [ ! -x "$(command -v sudo)" ]
+then
+    echo "Please install sudo (see README.md)"
+    exit 1
+fi
+
+if [ ! -x "$(command -v debootstrap)" ]
+then
+    echo "Please install debootstrap (see README.md)"
+    exit 1
+fi
 
 # -d / --dist
 if [ -n "${dist}" ]
