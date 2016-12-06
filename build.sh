@@ -57,6 +57,8 @@ function docker_debootstrap()
     exclude="debconf-i18n,dmsetup,git-man,info,man-db,manpages"
     components='main contrib non-free'
 
+    echo "-- debootstrap ${distname}" 1>&3
+
     if [ "$(id -u)" -ne 0 ]
     then
 	sudo='sudo'
@@ -73,10 +75,9 @@ function docker_debootstrap()
     then
 	echo "/!\ File /usr/share/debootstrap/scripts/${distname} is missing." 1>&3
         echo "1.) did you install backports version of debootstrap ?" 1>&3
-        echo "2.) run sudo ln -s gutsy /usr/share/debootstrap/scripts/${distname}" 1>&3
+        echo "2.) run sudo ln -s sid /usr/share/debootstrap/scripts/${distname}" 1>&3
         exit 1
     else
-	echo "-- debootstrap ${distname}" 1>&3
 	${sudo} debootstrap \
 		--arch="${arch}" \
 		--include="${include}" \
