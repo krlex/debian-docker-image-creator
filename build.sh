@@ -63,7 +63,10 @@ function docker_debootstrap()
     fi
 
     # clean old image
-    ${sudo} rm -fr "${image}"
+    if [ -d "/tmp/image-${distname}-${arch}" ]
+    then
+	${sudo} rm -fr "${image}"
+    fi
 
     # create minimal debootstrap image
     if [ ! -f "/usr/share/debootstrap/scripts/${distname}" ] || [ ! -h "/usr/share/debootstrap/scripts/${distname}" ]
@@ -81,7 +84,7 @@ function docker_debootstrap()
 		--variant=minbase \
 		"${distname}" \
 		"${image}" \
-		"http://${mirror}/debian" > /dev/null
+		"http://${mirror}/debian"
 	if [ ${?} -ne 0 ]
 	then
             echo "/!\ There is an issue with debootstrap, please run again with -v (verbose)." 1>&3
@@ -91,7 +94,7 @@ function docker_debootstrap()
 
     # create /etc/default/locale
     echo ' * /etc/default/locale' 1>&3
-    cat <<EOF | ${sudo} tee "${image}/etc/default/locale" > /dev/null
+    cat <<EOF | ${sudo} tee "${image}/etc/default/locale"
 LANG=C
 LANGUAGE=C
 LC_COLLATE=C
@@ -100,13 +103,13 @@ EOF
 
     # create /etc/timezone
     echo ' * /etc/timezone' 1>&3
-    cat <<EOF | ${sudo} tee "${image}/etc/timezone" > /dev/null
+    cat <<EOF | ${sudo} tee "${image}/etc/timezone"
 ${timezone}
 EOF
 
     # create /etc/resolv.conf
     echo ' * /etc/resolv.conf' 1>&3
-    cat <<EOF | ${sudo} tee "${image}/etc/resolv.conf" > /dev/null
+    cat <<EOF | ${sudo} tee "${image}/etc/resolv.conf"
 nameserver 8.8.4.4
 nameserver 8.8.8.8
 EOF
@@ -116,7 +119,7 @@ EOF
 
 	# create /etc/apt/sources.list
 	echo ' * /etc/apt/sources.list' 1>&3
-	cat <<EOF | ${sudo} tee "${image}/etc/apt/sources.list" > /dev/null
+	cat <<EOF | ${sudo} tee "${image}/etc/apt/sources.list"
 deb http://archive.debian.org/debian lenny main contrib non-free
 deb http://archive.debian.org/debian-backports lenny-backports main contrib non-free
 EOF
@@ -124,7 +127,7 @@ EOF
 	# create /etc/apt/apt.conf.d/90ignore-release-date
 	# thanks to http://stackoverflow.com/questions/36080756/archive-repository-for-debian-squeeze
 	echo ' * /etc/apt/apt.conf.d/ignore-release-date' 1>&3
-	cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/ignore-release-date" > /dev/null
+	cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/ignore-release-date"
 Acquire::Check-Valid-Until "false";
 EOF
 
@@ -133,7 +136,7 @@ EOF
 
 	# create /etc/apt/sources.list
 	echo ' * /etc/apt/sources.list' 1>&3
-	cat <<EOF | ${sudo} tee "${image}/etc/apt/sources.list" > /dev/null
+	cat <<EOF | ${sudo} tee "${image}/etc/apt/sources.list"
 deb http://archive.debian.org/debian squeeze main contrib non-free
 deb http://archive.debian.org/debian squeeze-lts main contrib non-free
 deb http://archive.debian.org/debian-backports squeeze-backports main contrib non-free
@@ -143,7 +146,7 @@ EOF
 	# create /etc/apt/apt.conf.d/90ignore-release-date
 	# thanks to http://stackoverflow.com/questions/36080756/archive-repository-for-debian-squeeze
 	echo ' * /etc/apt/apt.conf.d/ignore-release-date' 1>&3
-	cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/ignore-release-date" > /dev/null
+	cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/ignore-release-date"
 Acquire::Check-Valid-Until "false";
 EOF
 
@@ -151,27 +154,27 @@ EOF
 
 	# create /etc/apt/sources.list
 	echo ' * /etc/apt/sources.list' 1>&3
-	cat <<EOF | ${sudo} tee "${image}/etc/apt/sources.list" > /dev/null
+	cat <<EOF | ${sudo} tee "${image}/etc/apt/sources.list"
 deb http://${mirror}/debian ${distname} ${components}
 deb http://${mirror}/debian ${distname}-updates ${components}
 EOF
 
 	# create /etc/apt/sources.list.d/backports.list
 	echo ' * /etc/apt/sources.list.d/backports.list' 1>&3
-	cat <<EOF | ${sudo} tee "${image}/etc/apt/sources.list.d/backports.list" > /dev/null
+	cat <<EOF | ${sudo} tee "${image}/etc/apt/sources.list.d/backports.list"
 deb http://${mirror}/debian ${distname}-backports ${components}
 EOF
 
 	# create /etc/apt/sources.list.d/security.list
 	echo ' * /etc/apt/sources.list.d/security.list' 1>&3
-	cat <<EOF | ${sudo} tee "${image}/etc/apt/sources.list.d/security.list"  > /dev/null
+	cat <<EOF | ${sudo} tee "${image}/etc/apt/sources.list.d/security.list" 
 deb http://security.debian.org/ ${distname}/updates ${components}
 EOF
 
 	# create /etc/dpkg/dpkg.cfg.d/disable-doc
 	# thanks to http://askubuntu.com/questions/129566/remove-documentation-to-save-hard-drive-space
 	echo ' * /etc/dpkg/dpkg.cfg.d/disable-doc'  1>&3
-	cat <<EOF | ${sudo} tee "${image}/etc/dpkg/dpkg.cfg.d/disable-doc" > /dev/null
+	cat <<EOF | ${sudo} tee "${image}/etc/dpkg/dpkg.cfg.d/disable-doc"
 path-exclude /usr/share/doc/*
 path-include /usr/share/doc/*/copyright
 path-exclude /usr/share/info/*
@@ -183,14 +186,14 @@ EOF
     # create /etc/apt/apt.conf.d/force-ipv4
     # thanks to https://github.com/cw-ansible/cw.apt/
     echo ' * /etc/apt/apt.conf.d/force-ipv4' 1>&3
-    cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/force-ipv4" > /dev/null
+    cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/force-ipv4"
 Acquire::ForceIPv4 "true";
 EOF
 
     # create /etc/apt/apt.conf.d/disable-auto-install
     # thanks to https://github.com/cw-ansible/cw.apt/
     echo ' * /etc/apt/apt.conf.d/disable-auto-install' 1>&3
-    cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/disable-auto-install" > /dev/null
+    cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/disable-auto-install"
 APT::Install-Recommends "0";
 APT::Install-Suggests "0";
 EOF
@@ -198,7 +201,7 @@ EOF
     # create /etc/apt/apt.conf.d/disable-cache
     # thanks to https://github.com/docker/docker/blob/master/contrib/mkimage-debootstrap.sh
     echo ' * /etc/apt/apt.conf.d/disable-cache' 1>&3
-    cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/disable-cache" > /dev/null
+    cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/disable-cache"
 Dir::Cache::pkgcache "";
 Dir::Cache::srcpkgcache "";
 EOF
@@ -206,7 +209,7 @@ EOF
     # create /etc/apt/apt.conf.d/force-conf
     # thanks to https://raphaelhertzog.com/2010/09/21/debian-conffile-configuration-file-managed-by-dpkg/
     echo ' * /etc/apt/apt.conf.d/force-conf' 1>&3
-    cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/force-conf" > /dev/null
+    cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/force-conf"
 Dpkg::Options {
    "--force-confnew";
    "--force-confmiss";
@@ -216,13 +219,13 @@ EOF
     # create /etc/apt/apt.conf.d/disable-languages
     # thanks to https://github.com/docker/docker/blob/master/contrib/mkimage-debootstrap.sh
     echo ' * /etc/apt/apt.conf.d/disable-languages' 1>&3
-    cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/disable-languages" > /dev/null
+    cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/disable-languages"
 Acquire::Languages "none";
 EOF
 
     # create /usr/bin/apt-clean
     echo ' * /usr/bin/apt-clean' 1>&3
-    cat <<EOF | ${sudo} tee "${image}/usr/bin/apt-clean" > /dev/null
+    cat <<EOF | ${sudo} tee "${image}/usr/bin/apt-clean"
 #!/bin/bash
 
 # Please read https://wiki.debian.org/ReduceDebian
@@ -258,7 +261,7 @@ EOF
              apt-get dist-upgrade -qq -y && \
              apt-get clean -qq -y && \
              apt-get autoremove -qq -y && \
-             apt-get autoclean -qq -y" > /dev/null 2>&1
+             apt-get autoclean -qq -y"
 
     # unmount
     ${sudo} umount "${image}/dev/pts"
