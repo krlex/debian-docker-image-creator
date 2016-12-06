@@ -20,7 +20,7 @@ arch='amd64'
 oldstable='wheezy'
 stable='jessie'
 testing='stretch'
-version='3.0'
+version='4.0'
 
 function usage()
 {
@@ -40,7 +40,8 @@ OPTIONS:
    -u, --user		Docker Hub username or organisation (default: $USER)
    -p, --push		Docker Hub push
    -l, --latest         Force the "latest" (default: jessie)
-   -v, --version        Show version
+   -v, --verbose	Verbose
+   -V, --version        Show version
 
 VERSION:
    docker-debian version: ${version}
@@ -65,18 +66,31 @@ function docker_debootstrap()
     ${sudo} rm -fr "${image}"
 
     # create minimal debootstrap image
-    echo "-- debootstrap ${distname}"
-    ${sudo} debootstrap \
-	    --arch="${arch}" \
-	    --include="${include}" \
-	    --exclude="${exclude}" \
-	    --variant=minbase \
-	    "${distname}" \
-	    "${image}" \
-	    "http://${mirror}/debian" > /dev/null
+    if [ ! -f "/usr/share/debootstrap/scripts/${distname}" ] || [ ! -h "/usr/share/debootstrap/scripts/${distname}" ]
+    then
+	echo "/!\ File /usr/share/debootstrap/scripts/${distname} is missing." 1>&3
+        echo "1.) did you install backports version of debootstrap ?" 1>&3
+        echo "2.) run sudo ln -s gutsy /usr/share/debootstrap/scripts/${distname}" 1>&3
+        exit 1
+    else
+	echo "-- debootstrap ${distname}" 1>&3
+	${sudo} debootstrap \
+		--arch="${arch}" \
+		--include="${include}" \
+		--exclude="${exclude}" \
+		--variant=minbase \
+		"${distname}" \
+		"${image}" \
+		"http://${mirror}/debian" > /dev/null
+	if [ ${?} -ne 0 ]
+	then
+            echo "/!\ There is an issue with debootstrap, please run again with -v (verbose)." 1>&3
+            exit 1
+	fi
+    fi
 
     # create /etc/default/locale
-    echo ' * /etc/default/locale'
+    echo ' * /etc/default/locale' 1>&3
     cat <<EOF | ${sudo} tee "${image}/etc/default/locale" > /dev/null
 LANG=C
 LANGUAGE=C
@@ -85,13 +99,13 @@ LC_ALL=C
 EOF
 
     # create /etc/timezone
-    echo ' * /etc/timezone'
+    echo ' * /etc/timezone' 1>&3
     cat <<EOF | ${sudo} tee "${image}/etc/timezone" > /dev/null
 ${timezone}
 EOF
 
     # create /etc/resolv.conf
-    echo ' * /etc/resolv.conf'
+    echo ' * /etc/resolv.conf' 1>&3
     cat <<EOF | ${sudo} tee "${image}/etc/resolv.conf" > /dev/null
 nameserver 8.8.4.4
 nameserver 8.8.8.8
@@ -101,7 +115,7 @@ EOF
     then
 
 	# create /etc/apt/sources.list
-	echo ' * /etc/apt/sources.list'
+	echo ' * /etc/apt/sources.list' 1>&3
 	cat <<EOF | ${sudo} tee "${image}/etc/apt/sources.list" > /dev/null
 deb http://archive.debian.org/debian lenny main contrib non-free
 deb http://archive.debian.org/debian-backports lenny-backports main contrib non-free
@@ -109,7 +123,7 @@ EOF
 
 	# create /etc/apt/apt.conf.d/90ignore-release-date
 	# thanks to http://stackoverflow.com/questions/36080756/archive-repository-for-debian-squeeze
-	echo ' * /etc/apt/apt.conf.d/ignore-release-date'
+	echo ' * /etc/apt/apt.conf.d/ignore-release-date' 1>&3
 	cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/ignore-release-date" > /dev/null
 Acquire::Check-Valid-Until "false";
 EOF
@@ -118,7 +132,7 @@ EOF
     then
 
 	# create /etc/apt/sources.list
-	echo ' * /etc/apt/sources.list'
+	echo ' * /etc/apt/sources.list' 1>&3
 	cat <<EOF | ${sudo} tee "${image}/etc/apt/sources.list" > /dev/null
 deb http://archive.debian.org/debian squeeze main contrib non-free
 deb http://archive.debian.org/debian squeeze-lts main contrib non-free
@@ -128,7 +142,7 @@ EOF
 
 	# create /etc/apt/apt.conf.d/90ignore-release-date
 	# thanks to http://stackoverflow.com/questions/36080756/archive-repository-for-debian-squeeze
-	echo ' * /etc/apt/apt.conf.d/ignore-release-date'
+	echo ' * /etc/apt/apt.conf.d/ignore-release-date' 1>&3
 	cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/ignore-release-date" > /dev/null
 Acquire::Check-Valid-Until "false";
 EOF
@@ -136,26 +150,27 @@ EOF
     else
 
 	# create /etc/apt/sources.list
-	echo ' * /etc/apt/sources.list'
+	echo ' * /etc/apt/sources.list' 1>&3
 	cat <<EOF | ${sudo} tee "${image}/etc/apt/sources.list" > /dev/null
 deb http://${mirror}/debian ${distname} ${components}
 deb http://${mirror}/debian ${distname}-updates ${components}
 EOF
 
 	# create /etc/apt/sources.list.d/backports.list
-	echo ' * /etc/apt/sources.list.d/backports.list'
+	echo ' * /etc/apt/sources.list.d/backports.list' 1>&3
 	cat <<EOF | ${sudo} tee "${image}/etc/apt/sources.list.d/backports.list" > /dev/null
 deb http://${mirror}/debian ${distname}-backports ${components}
 EOF
 
 	# create /etc/apt/sources.list.d/security.list
-	echo ' * /etc/apt/sources.list.d/security.list'
+	echo ' * /etc/apt/sources.list.d/security.list' 1>&3
 	cat <<EOF | ${sudo} tee "${image}/etc/apt/sources.list.d/security.list"  > /dev/null
 deb http://security.debian.org/ ${distname}/updates ${components}
 EOF
 
 	# create /etc/dpkg/dpkg.cfg.d/disable-doc
 	# thanks to http://askubuntu.com/questions/129566/remove-documentation-to-save-hard-drive-space
+	echo ' * /etc/dpkg/dpkg.cfg.d/disable-doc'  1>&3
 	cat <<EOF | ${sudo} tee "${image}/etc/dpkg/dpkg.cfg.d/disable-doc" > /dev/null
 path-exclude /usr/share/doc/*
 path-include /usr/share/doc/*/copyright
@@ -167,14 +182,14 @@ EOF
 
     # create /etc/apt/apt.conf.d/force-ipv4
     # thanks to https://github.com/cw-ansible/cw.apt/
-    echo ' * /etc/apt/apt.conf.d/force-ipv4'
+    echo ' * /etc/apt/apt.conf.d/force-ipv4' 1>&3
     cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/force-ipv4" > /dev/null
 Acquire::ForceIPv4 "true";
 EOF
 
     # create /etc/apt/apt.conf.d/disable-auto-install
     # thanks to https://github.com/cw-ansible/cw.apt/
-    echo ' * /etc/apt/apt.conf.d/disable-auto-install'
+    echo ' * /etc/apt/apt.conf.d/disable-auto-install' 1>&3
     cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/disable-auto-install" > /dev/null
 APT::Install-Recommends "0";
 APT::Install-Suggests "0";
@@ -182,7 +197,7 @@ EOF
 
     # create /etc/apt/apt.conf.d/disable-cache
     # thanks to https://github.com/docker/docker/blob/master/contrib/mkimage-debootstrap.sh
-    echo ' * /etc/apt/apt.conf.d/disable-cache'
+    echo ' * /etc/apt/apt.conf.d/disable-cache' 1>&3
     cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/disable-cache" > /dev/null
 Dir::Cache::pkgcache "";
 Dir::Cache::srcpkgcache "";
@@ -190,7 +205,7 @@ EOF
 
     # create /etc/apt/apt.conf.d/force-conf
     # thanks to https://raphaelhertzog.com/2010/09/21/debian-conffile-configuration-file-managed-by-dpkg/
-    echo ' * /etc/apt/apt.conf.d/force-conf'
+    echo ' * /etc/apt/apt.conf.d/force-conf' 1>&3
     cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/force-conf" > /dev/null
 Dpkg::Options {
    "--force-confnew";
@@ -200,13 +215,13 @@ EOF
 
     # create /etc/apt/apt.conf.d/disable-languages
     # thanks to https://github.com/docker/docker/blob/master/contrib/mkimage-debootstrap.sh
-    echo ' * /etc/apt/apt.conf.d/disable-languages'
+    echo ' * /etc/apt/apt.conf.d/disable-languages' 1>&3
     cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/disable-languages" > /dev/null
 Acquire::Languages "none";
 EOF
 
     # create /usr/bin/apt-clean
-    echo ' * /usr/bin/apt-clean'
+    echo ' * /usr/bin/apt-clean' 1>&3
     cat <<EOF | ${sudo} tee "${image}/usr/bin/apt-clean" > /dev/null
 #!/bin/bash
 
@@ -233,7 +248,7 @@ EOF
     ${sudo} cp -r ca-certificates "${image}/usr/local/share/"
 
     # upgrade (without output...)
-    echo ' * apt-get upgrade'
+    echo ' * apt-get upgrade' 1>&3
     ${sudo} chroot "${image}" bash -c \
 	    "export DEBIAN_FRONTEND=noninteractive && \
              export LC_ALL=C && \
@@ -270,18 +285,18 @@ EOF
 # create images from bootstrap archive
 function docker_import()
 {
-    echo "-- docker import debian:${distname} (from ${image}.tgz)"
+    echo "-- docker import debian:${distname} (from ${image}.tgz)" 1>&3
     docker import "${image}.tar" "${user}/debian:${distname}"
-    docker run "${user}/debian:${distname}" echo "Successfully build ${user}/debian:${distname}"
+    docker run "${user}/debian:${distname}" echo "Successfully build ${user}/debian:${distname}" 1>&3
     docker tag "${user}/debian:${distname}" "${user}/debian:${distid}"
-    docker run "${user}/debian:${distid}" echo "Successfully build ${user}/debian:${distid}"
+    docker run "${user}/debian:${distid}" echo "Successfully build ${user}/debian:${distid}" 1>&3
 
     for import in latest oldstable stable testing
     do
 	if [ "${distname}" = "${!import}" ]
 	then
 	    docker tag "${user}/debian:${distname}" "${user}/debian:${import}"
-	    docker run "${user}/debian:${import}" echo "Successfully build ${user}/debian:${import}"
+	    docker run "${user}/debian:${import}" echo "Successfully build ${user}/debian:${import}" 1>&3
 	fi
     done
 }
@@ -289,22 +304,22 @@ function docker_import()
 # push image to docker hub
 function docker_push()
 {
-    echo "-- docker push debian:${distname}"
+    echo "-- docker push debian:${distname}" 1>&3
     docker push "${user}/debian:${distname}"
     echo "-- docker push debian:${distid}"
-    docker push "${user}/debian:${distid}"
+    docker push "${user}/debian:${distid}" 1>&3
 
     for push in latest oldstable stable testing
     do
 	if [ "${distname}" = "${!push}"  ]
 	then
-	    echo "-- docker push ${push}"
+	    echo "-- docker push ${push}" 1>&3
 	    docker push "${user}/debian:${push}"
 	fi
     done
 }
 
-while getopts 'hd:m:t:u:plv' OPTIONS
+while getopts 'hd:m:t:u:plvV' OPTIONS
 do
     case ${OPTIONS} in
 	h)
@@ -337,6 +352,10 @@ do
 	    latest=${OPTARG}
 	    ;;
 	v)
+	    # -v / --verbose
+            verbose='true'
+            ;;
+	V)
 	    # -v / --version
 	    echo "${version}"
 	    exit 0
@@ -422,6 +441,16 @@ fi
 if [ -z "${latest}" ]
 then
     latest='jessie'
+fi
+
+# -v / --verbose
+if [ -z "${verbose}" ]
+then
+    exec 3>&1
+    exec 1>/dev/null
+    exec 2>/dev/null
+else
+    exec 3>&1
 fi
 
 docker_debootstrap
