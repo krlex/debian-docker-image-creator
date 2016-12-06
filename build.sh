@@ -40,7 +40,7 @@ OPTIONS:
    -u, --user		Docker Hub username or organisation (default: $USER)
    -p, --push		Docker Hub push
    -l, --latest         Force the "latest" (default: jessie)
-   -v, --verbose	Verbose
+   -v, --verbose	Verbose mode
    -V, --version        Show version
 
 VERSION:
