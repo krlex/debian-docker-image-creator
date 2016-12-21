@@ -53,7 +53,7 @@ function docker_debootstrap()
 {
     # variables
     image="/tmp/image-${distname}-${arch}"
-    include="apt-transport-https,apt-utils,ca-certificates,curl,git,locales"
+    include="apt-transport-https,apt-utils,ca-certificates,curl,git,vim,locales"
     exclude="debconf-i18n,dmsetup,git-man,info,man-db,manpages"
     components='main contrib non-free'
 
@@ -168,7 +168,7 @@ EOF
 
 	# create /etc/apt/sources.list.d/security.list
 	echo ' * /etc/apt/sources.list.d/security.list' 1>&3
-	cat <<EOF | ${sudo} tee "${image}/etc/apt/sources.list.d/security.list" 
+	cat <<EOF | ${sudo} tee "${image}/etc/apt/sources.list.d/security.list"
 deb http://security.debian.org/ ${distname}/updates ${components}
 EOF
 
@@ -432,7 +432,7 @@ fi
 # -t / --timezone
 if [ -z "${timezone}" ]
 then
-    timezone='Europe/Amsterdam'
+    timezone='Europe/Belgrade'
 fi
 
 # -u / --user
