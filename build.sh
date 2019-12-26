@@ -17,10 +17,10 @@
 PATH='/usr/sbin:/usr/bin:/sbin:/bin'
 
 arch='amd64'
-oldstable='wheezy'
-stable='jessie'
-testing='stretch'
-version='4.0'
+oldstable='stretch'
+stable='buster'
+testing='bullseye'
+version='8.0'
 
 function usage()
 {
@@ -34,12 +34,12 @@ USAGE:
 
 OPTIONS:
    -h, --help           Show help
-   -d, --dist		Choose Debian distribution (lenny, squeeze, wheezy, jessie, stretch, sid)
+   -d, --dist		Choose Debian distribution (stretch, buster, bullseye[not exist yet] )
    -m, --mirror		Choose your preferred mirror (default: ftp.debian.org)
    -t, --timezone       Choose your preferred timezone (default: Europe/Amsterdam)
    -u, --user		Docker Hub username or organisation (default: $USER)
    -p, --push		Docker Hub push
-   -l, --latest         Force the "latest" (default: jessie)
+   -l, --latest         Force the "latest" (default: buster)
    -v, --verbose	Verbose mode
    -V, --version        Show version
 
