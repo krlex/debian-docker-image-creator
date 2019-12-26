@@ -144,7 +144,6 @@ deb http://archive.debian.org/debian-backports ${distname}-backports-sloppy main
 EOF
 
 	# create /etc/apt/apt.conf.d/90ignore-release-date
-	# thanks to http://stackoverflow.com/questions/36080756/archive-repository-for-debian-squeeze
 	echo ' * /etc/apt/apt.conf.d/ignore-release-date' 1>&3
 	cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/ignore-release-date"
 Acquire::Check-Valid-Until "false";
@@ -386,27 +385,19 @@ fi
 if [ -n "${dist}" ]
 then
     case ${dist} in
-	lenny|5|5.0)
-	    distname='lenny'
+	stretch|5|5.0)
+	    distname='stretch'
 	    distid='5'
 	    mirror='archive.debian.org'
 	    ;;
-	squeeze|6|6.0)
-	    distname='squeeze'
+	buster|6|6.0)
+	    distname='buster'
 	    distid='6'
 	    mirror='archive.debian.org'
 	    ;;
-	wheezy|7|7.0)
-	    distname='wheezy'
+	bullseye|7|7.0)
+	    distname='bullseye'
 	    distid='7'
-	    ;;
-	jessie|8|8.0)
-	    distname='jessie'
-	    distid='8'
-	    ;;
-	stretch|9|9.0)
-	    distname='stretch'
-	    distid='9'
 	    ;;
 	sid)
 	    distname='sid'
@@ -443,7 +434,7 @@ fi
 # -l / --latest
 if [ -z "${latest}" ]
 then
-    latest='jessie'
+    latest='buster'
 fi
 
 # -v / --verbose
