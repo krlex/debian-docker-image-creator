@@ -115,7 +115,7 @@ nameserver 8.8.4.4
 nameserver 8.8.8.8
 EOF
 
-    if [ "${distname}" = 'lenny' ]
+    if [ "${distname}" = 'stretch' ]
     then
 
 	# create /etc/apt/sources.list
@@ -126,13 +126,12 @@ deb http://archive.debian.org/debian-backports ${distname}-backports main contri
 EOF
 
 	# create /etc/apt/apt.conf.d/90ignore-release-date
-	# thanks to http://stackoverflow.com/questions/36080756/archive-repository-for-debian-squeeze
 	echo ' * /etc/apt/apt.conf.d/ignore-release-date' 1>&3
 	cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/ignore-release-date"
 Acquire::Check-Valid-Until "false";
 EOF
 
-    elif [ "${distname}" = 'squeeze' ]
+    elif [ "${distname}" = 'buster' ]
     then
 
 	# create /etc/apt/sources.list
