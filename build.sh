@@ -115,24 +115,7 @@ nameserver 8.8.4.4
 nameserver 8.8.8.8
 EOF
 
-    if [ "${distname}" = 'lenny' ]
-    then
-
-	# create /etc/apt/sources.list
-	echo ' * /etc/apt/sources.list' 1>&3
-	cat <<EOF | ${sudo} tee "${image}/etc/apt/sources.list"
-deb http://archive.debian.org/debian lenny main contrib non-free
-deb http://archive.debian.org/debian-backports lenny-backports main contrib non-free
-EOF
-
-	# create /etc/apt/apt.conf.d/90ignore-release-date
-	# thanks to http://stackoverflow.com/questions/36080756/archive-repository-for-debian-squeeze
-	echo ' * /etc/apt/apt.conf.d/ignore-release-date' 1>&3
-	cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/ignore-release-date"
-Acquire::Check-Valid-Until "false";
-EOF
-
-    elif [ "${distname}" = 'squeeze' ]
+    if [ "${distname}" = 'squeeze' ]
     then
 
 	# create /etc/apt/sources.list
@@ -387,11 +370,6 @@ fi
 if [ -n "${dist}" ]
 then
     case ${dist} in
-	lenny|5|5.0)
-	    distname='lenny'
-	    distid='5'
-	    mirror='archive.debian.org'
-	    ;;
 	squeeze|6|6.0)
 	    distname='squeeze'
 	    distid='6'
