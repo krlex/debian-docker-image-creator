@@ -17,11 +17,9 @@ all of our images are accurates.
 
 Supported tags.
 
-- 5, lenny
-- 6, squeeze
-- 7, wheezy, oldstable
-- 8, jessie, stable, latest
-- 9, stretch, testing
+- 7, stretch, oldstable
+- 8, buster, stable, latest
+- 9, bullseye, testing
 - sid
 
 ## Requirements
@@ -53,8 +51,7 @@ $ docker login
 
 ## Usage
 
-You first need  to choose which dist between lenny  (5.0), squeeze (6.0), wheezy
-(7.0), jessie (8.0) and stretch (9.0) you want (jessie will be the 'latest' tag)
+You first need  to choose which dist between stretch (9.0), buster (10.0) and bullseye (11.0) you want (buster will be the 'latest' tag)
 and you need to choose you user (or organization) name on Docker Hub.
 
 Show help.
@@ -63,34 +60,14 @@ Show help.
 $ ./build.sh -h
 ```
 
-Build your own Debian image (eg. wheezy).
+Build your own Debian image (eg. stretch).
 
 ```bash
-$ ./build.sh -d wheezy -u rockyluke
+$ ./build.sh -d stretch -u $USER
 ```
 
-Build your own Debian image (eg. jessie) and push it on the Docker Hub.
+Build your own Debian image (eg. buster) and push it on the Docker Hub.
 
 ```bash
-$ ./build.sh -d jessie -u rockyluke -p
+$ ./build.sh -d buster -u <docker account username> -p
 ```
-
-## Development
-
-Feel free to contribute on GitHub.
-
-```
-    ╚⊙ ⊙╝
-  ╚═(███)═╝
- ╚═(███)═╝
-╚═(███)═╝
- ╚═(███)═╝
-  ╚═(███)═╝
-   ╚═(███)═╝
-```
-
-[license-img]: https://img.shields.io/badge/license-ISC-blue.svg
-[build-img]: https://travis-ci.org/rockyluke/docker-debian.svg?branch=master
-[build-url]: https://travis-ci.org/rockyluke/docker-debian
-[docker-img]: https://img.shields.io/docker/pulls/rockyluke/debian.svg
-[docker-url]: https://registry.hub.docker.com/u/rockyluke/debian
