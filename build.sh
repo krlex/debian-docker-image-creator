@@ -35,8 +35,8 @@ USAGE:
 OPTIONS:
    -h, --help           Show help
    -d, --dist		Choose Debian distribution (stretch, buster, bullseye[not exist yet] )
-   -m, --mirror		Choose your preferred mirror (default: ftp.debian.org)
-   -t, --timezone       Choose your preferred timezone (default: Europe/Amsterdam)
+   -m, --mirror		Choose your preferred mirror (default: deb.debian.org)
+   -t, --timezone       Choose your preferred timezone (default: Europe/Belgrade)
    -u, --user		Docker Hub username or organisation (default: $USER)
    -p, --push		Docker Hub push
    -l, --latest         Force the "latest" (default: buster)
@@ -115,14 +115,14 @@ nameserver 8.8.4.4
 nameserver 8.8.8.8
 EOF
 
-    if [ "${distname}" = 'stretch' ]
+    if [ "${distname}" = 'oldstable' ]
     then
 
 	# create /etc/apt/sources.list
 	echo ' * /etc/apt/sources.list' 1>&3
 	cat <<EOF | ${sudo} tee "${image}/etc/apt/sources.list"
-deb http://archive.debian.org/debian ${distname} main contrib non-free
-deb http://archive.debian.org/debian-backports ${distname}-backports main contrib non-free
+deb http://deb.debian.org/debian ${distname} main contrib non-free
+deb http://deb.debian.org/debian-backports ${distname}-backports main contrib non-free
 EOF
 
 	# create /etc/apt/apt.conf.d/90ignore-release-date
@@ -131,15 +131,32 @@ EOF
 Acquire::Check-Valid-Until "false";
 EOF
 
-    elif [ "${distname}" = 'buster' ]
+    elif [ "${distname}" = 'stable' ]
     then
 
 	# create /etc/apt/sources.list
 	echo ' * /etc/apt/sources.list' 1>&3
 	cat <<EOF | ${sudo} tee "${image}/etc/apt/sources.list"
-deb http://archive.debian.org/debian ${distname} main contrib non-free
-# deb http://archive.debian.org/debian squeeze-lts main contrib non-free
-deb http://archive.debian.org/debian-backports ${distname}-backports-sloppy main contrib non-free
+deb http://deb.debian.org/debian ${distname} main contrib non-free
+# deb http://deb.debian.org/debian squeeze-lts main contrib non-free
+deb http://deb.debian.org/debian-backports ${distname}-backports-sloppy main contrib non-free
+EOF
+
+	# create /etc/apt/apt.conf.d/90ignore-release-date
+	echo ' * /etc/apt/apt.conf.d/ignore-release-date' 1>&3
+	cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/ignore-release-date"
+Acquire::Check-Valid-Until "false";
+EOF
+
+    elif [ "${distname}" = 'testing' ]
+    then
+
+	# create /etc/apt/sources.list
+	echo ' * /etc/apt/sources.list' 1>&3
+	cat <<EOF | ${sudo} tee "${image}/etc/apt/sources.list"
+deb http://deb.debian.org/debian ${distname} main contrib non-free
+# deb http://deb.debian.org/debian squeeze-lts main contrib non-free
+deb http://deb.debian.org/debian-backports ${distname}-backports-sloppy main contrib non-free
 EOF
 
 	# create /etc/apt/apt.conf.d/90ignore-release-date
@@ -170,7 +187,6 @@ deb http://security.debian.org/ ${distname}/updates ${components}
 EOF
 
 	# create /etc/dpkg/dpkg.cfg.d/disable-doc
-	# thanks to http://askubuntu.com/questions/129566/remove-documentation-to-save-hard-drive-space
 	echo ' * /etc/dpkg/dpkg.cfg.d/disable-doc'  1>&3
 	cat <<EOF | ${sudo} tee "${image}/etc/dpkg/dpkg.cfg.d/disable-doc"
 path-exclude /usr/share/doc/*
@@ -182,14 +198,12 @@ EOF
     fi
 
     # create /etc/apt/apt.conf.d/force-ipv4
-    # thanks to https://github.com/cw-ansible/cw.apt/
     echo ' * /etc/apt/apt.conf.d/force-ipv4' 1>&3
     cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/force-ipv4"
 Acquire::ForceIPv4 "true";
 EOF
 
     # create /etc/apt/apt.conf.d/disable-auto-install
-    # thanks to https://github.com/cw-ansible/cw.apt/
     echo ' * /etc/apt/apt.conf.d/disable-auto-install' 1>&3
     cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/disable-auto-install"
 APT::Install-Recommends "0";
@@ -197,7 +211,6 @@ APT::Install-Suggests "0";
 EOF
 
     # create /etc/apt/apt.conf.d/disable-cache
-    # thanks to https://github.com/docker/docker/blob/master/contrib/mkimage-debootstrap.sh
     echo ' * /etc/apt/apt.conf.d/disable-cache' 1>&3
     cat <<EOF | ${sudo} tee "${image}/etc/apt/apt.conf.d/disable-cache"
 Dir::Cache::pkgcache "";
@@ -275,7 +288,7 @@ EOF
     ${sudo} find   "${image}/var/cache/apt"     -type f -delete
     ${sudo} find   "${image}/var/lib/apt/lists" -type f -delete
 
-    # create archive
+    # create deb
     if [ -f "${image}.tar" ]
     then
 	${sudo} rm "${image}.tar"
@@ -283,7 +296,7 @@ EOF
     ${sudo} tar --numeric-owner -cf "${image}.tar" -C "${image}" .
 }
 
-# create images from bootstrap archive
+# create images from bootstrap deb
 function docker_import()
 {
     echo "-- docker import debian:${distname} (from ${image}.tgz)" 1>&3
@@ -387,12 +400,12 @@ then
 	stretch|5|5.0)
 	    distname='stretch'
 	    distid='5'
-	    mirror='archive.debian.org'
+	    mirror='deb.debian.org'
 	    ;;
 	buster|6|6.0)
 	    distname='buster'
 	    distid='6'
-	    mirror='archive.debian.org'
+	    mirror='deb.debian.org'
 	    ;;
 	bullseye|7|7.0)
 	    distname='bullseye'
@@ -415,7 +428,7 @@ fi
 # -m / --mirror
 if [ -z "${mirror}" ]
 then
-    mirror='ftp.debian.org'
+    mirror='deb.debian.org'
 fi
 
 # -t / --timezone
@@ -433,7 +446,7 @@ fi
 # -l / --latest
 if [ -z "${latest}" ]
 then
-    latest='jessie'
+    latest='buster'
 fi
 
 # -v / --verbose
